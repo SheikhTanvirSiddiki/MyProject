@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom HTML Database</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Custom HTML Database</h1>
+    
+    <h2>Add Data</h2>
+    <form id="addForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" required><br><br>
+        
+        <label for="email">Email:</label>
+        <input type="email" id="email" required><br><br>
+        
+        <button type="submit">Add Data</button>
+    </form>
+    
+    <h2>Data Table</h2>
+    <table id="dataTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be populated here -->
+        </tbody>
+    </table>
+
+    <script>
+        const apiUrl = 'http://127.0.0.1:5000/api/data';
+        
+        // Fetch data and update table
+        async function fetchData() {
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            const tableBody = document.getElementById('dataTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = ''; // Clear existing table rows
+            
+            data.forEach(item => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${item.name}</td>
+                    <td>${item.email}</td>
+                    <td>
+                        <button onclick="editData(${item.id})">Edit</button>
+                        <button onclick="deleteData(${item.id})">Delete</button>
+                    </td>
+                `;
+            });
+        }
+
+        // Handle form submission for adding data
+        document.getElementById('addForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+
+            const newData = { name, email };
+
+            await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newData)
+            });
+
+            // Clear form inputs and refresh table
+            document.getElementById('name').value = '';
+            document.getElementById('email').value = '';
+            fetchData();
+        });
+
+        // Edit data
+        async function editData(id) {
+            const name = prompt('Enter new name:');
+            const email = prompt('Enter new email:');
+            const updatedData = { name, email };
+
+            await fetch(`${apiUrl}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData)
+            });
+
+            fetchData();
+        }
+
+        // Delete data
+        async function deleteData(id) {
+            await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+            fetchData();
+        }
+
+        // Initial data fetch
+        fetchData();
+    </script>
+</body>
+</html>
