@@ -1,12 +1,12 @@
 from flask import Flask, jsonify, request
-from flask_cors import CORS  # Added CORS for cross-origin requests
+from flask_cors import CORS
 import os
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# File path to store data (could be on a pen drive or server)
-file_path = 'data.html'
+# File path to store data (use a persistent path for deployment)
+file_path = os.path.join(os.getcwd(), 'data.html')
 
 # Helper function to read data from the HTML file
 def read_data_from_html():
@@ -14,7 +14,6 @@ def read_data_from_html():
     try:
         with open(file_path, 'r') as file:
             lines = file.readlines()
-
         for line in lines:
             if line.startswith('<tr>'):
                 parts = line.split('</td>')
@@ -30,7 +29,6 @@ def read_data_from_html():
 # Helper function to save data to the HTML file
 def save_data_to_html(data):
     try:
-        print("Saving data:", data)  # Debugging log
         with open(file_path, 'w') as file:
             file.write('<table><tr><th>ID</th><th>Name</th><th>Email</th></tr>\n')
             for item in data:
@@ -85,4 +83,4 @@ if __name__ == '__main__':
     if not os.path.exists(file_path):
         save_data_to_html([])
 
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
