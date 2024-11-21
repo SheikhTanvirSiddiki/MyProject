@@ -1,9 +1,9 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import os
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+app = Flask(__name__, static_folder='frontend')  # 'frontend' is where index.html is stored
+CORS(app)
 
 # File path to store data
 file_path = os.path.join(os.getcwd(), 'data.html')
@@ -37,13 +37,18 @@ def save_data_to_html(data):
     except Exception as e:
         print(f"Error saving data: {e}")
 
-# GET method to retrieve all data
+# Serve the index.html file
+@app.route('/')
+def serve_index():
+    return send_from_directory(app.static_folder, 'index.html')
+
+# API route to retrieve all data
 @app.route('/api/data', methods=['GET'])
 def get_data():
     data = read_data_from_html()
     return jsonify(data)
 
-# POST method to add new data
+# API route to add new data
 @app.route('/api/data', methods=['POST'])
 def add_data():
     new_data = request.get_json()
@@ -54,7 +59,7 @@ def add_data():
     save_data_to_html(data)
     return jsonify({"message": "Data added successfully!"}), 201
 
-# PUT method to update existing data
+# API route to update existing data
 @app.route('/api/data/<int:id>', methods=['PUT'])
 def update_data(id):
     updated_data = request.get_json()
@@ -67,7 +72,7 @@ def update_data(id):
             return jsonify({"message": "Data updated successfully!"})
     return jsonify({"message": "Data not found"}), 404
 
-# DELETE method to delete data
+# API route to delete data
 @app.route('/api/data/<int:id>', methods=['DELETE'])
 def delete_data(id):
     data = read_data_from_html()
