@@ -5,7 +5,7 @@ import os
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# File path to store data (use a persistent path for deployment)
+# File path to store data
 file_path = os.path.join(os.getcwd(), 'data.html')
 
 # Helper function to read data from the HTML file
@@ -83,4 +83,5 @@ if __name__ == '__main__':
     if not os.path.exists(file_path):
         save_data_to_html([])
 
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
